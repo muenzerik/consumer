@@ -1,7 +1,8 @@
 import spock.lang.Specification
+import spock.lang.Unroll
 import java.text.SimpleDateFormat
-import java.util.Date
 
+@Unroll
 class ClientModulCertFilterTest extends Specification {
     
     def """
@@ -27,7 +28,10 @@ class ClientModulCertFilterTest extends Specification {
 
         then: "The RSA certificate shall be filtered out"
         result == [
-            certs[1]
+            certs[0]
         ]
+
+        where:
+        methodToTest << ["weedOutUnnecessaryRsaCerts", "weedOutweedOutUnnecessaryRsaCerts"]
     }
 }
