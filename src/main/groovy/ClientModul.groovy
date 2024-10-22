@@ -6,6 +6,7 @@ class ClientModul {
 
     /**
      * Filters out unnecessary RSA certificates from the provided list of certificates.
+     * A certificate is considered unnecessary if an ECC certificate from the same SMC-B is in the list as well.
      *
      * @param certs the list of certificates to be filtered
      * @return a list of certificates with unnecessary RSA certificates removed
@@ -20,12 +21,28 @@ class ClientModul {
                 .findAll { it.telematikId == c.telematikId }
                 .size() == 1
         }
-        filteredCerts += certsEcc
-        return filteredCerts
+        return certs - filteredCerts
     }
 
+    //TODO: Consider whether the linkage and flag to a partnering cert is really necessary
+    class RecipientCert extends Cert {
+        Boolean hasPartneringCertOnSameSmcB = false
+        Cert partnerCert = null
+        Cert originalCert
 
+        RecipientCert(Cert cert) {
+            super(cert.iccsn, cert.telematikId, cert.validFrom, cert.type)
+            this.originalCert = cert
+        }
+    }
 
+    /**
+     * Filters out unnecessary RSA certificates from the provided list of certificates.
+     * A certificate is considered unnecessary if an ECC certificate from the same SMC-B is in the list as well.
+     *
+     * @param certs the list of certificates to be filtered
+     * @return a list of certificates with unnecessary RSA certificates removed
+     */
     List<Cert> weedOutweedOutUnnecessaryRsaCerts(List<Cert> inputCerts ){
         def certsPerTelematikId = inputCerts.groupBy { c -> c.telematikId }
         def result = []
@@ -36,66 +53,55 @@ class ClientModul {
     }
 
     List<Cert> weedOutUnnecessaryRsaCertsForSameTelematikId(List<Cert> inputCerts){
-        def resultList = []
-        for(cert in inputCerts) {
-            if(cert.type == CertType.RSA) {
-                if ( hasIccsn(cert) ) {
-                    def maybeEccCert = findEccWithMatchingIccsn(cert, inputCerts)
-                    handleMaybeEccCert(maybeEccCert, cert, resultList, inputCerts)
-                } else {
-                    def maybeEccCert = findEccCertsWithinTimeProximity(cert, inputCerts)
-                    handleMaybeEccCert(maybeEccCert, cert, resultList, inputCerts)
-                }
+        def recipientCerts = inputCerts.collect {new RecipientCert(it) }
+
+        def redundantRsaCerts = []
+        for(cert in recipientCerts.findAll({it.type == CertType.ECC})) {
+             if ( cert.iccsn != null ) {
+                redundantRsaCerts?.add(findRsaWithMatchingIccsn(cert, recipientCerts))
+            } else {
+                 redundantRsaCerts?.add(findEccCertsWithinTimeProximity(cert, recipientCerts))
             }
         }
-        if (inputCerts.find { c -> c.type == CertType.ECC }.isNotEmpty()) {
-            throw IllegalStateException()
+        return (recipientCerts - redundantRsaCerts).collect({it.originalCert})
+    }
+
+    static RecipientCert findRsaWithMatchingIccsn(RecipientCert cert, List<RecipientCert> inputCerts){
+        def matchingCert = inputCerts.find { c ->
+            cert.iccsn == c.iccsn &&
+            cert != c &&
+            c.type == CertType.RSA &&
+            cert.iccsn != null &&
+            c.iccsn != null
         }
-        resultList.addAll(inputCerts)
-        return resultList
-    }
 
-    static boolean hasIccsn(Cert cert) {
-        return cert.iccsn != null
-    }
-
-    /**
-     * Assembles a list of certificates from a given list of certificates. if it matches with a given certificate.
-     *
-     * @param cert the certificate from which its ICCSN has to be taken for match comparison
-     * @param inputCerts the list of certificates from which to extract the certs with same ICCSN than in cert
-     * @return the ICCSN extracted from the certificate or null if the certificate does not contain an ICCSN
-     */
-    static Cert findEccWithMatchingIccsn(Cert cert, List<Cert> inputCerts){
-        return inputCerts.find { c -> cert.iccsn == c.iccsn && cert != c && c.type == CertType.ECC &&
-                cert.iccsn != null && c.iccsn != null }
-                .find()
-    }
-
-    /**
-     * Extracts the ICCSN from the given certificate.
-     *
-     * @param cert the certificate from which to extract the ICCSN
-     * @return the ICCSN extracted from the certificate or null if the certificate does not contain an ICCSN
-     */
-    Cert findEccCertsWithinTimeProximity(Cert cert, List<Cert> inputCerts){
-        if (extractIccsn(cert) != null) {
-            throw IllegalStateException()
+        if (matchingCert != null) {
+            cert.hasPartneringCertOnSameSmcB = true
+            cert.partnerCert = matchingCert
+            matchingCert.hasPartneringCertOnSameSmcB = true
+            matchingCert.partnerCert = cert
         }
-        inputCerts.find { c -> abs(c.validFrom - cert.validFrom) / 1000 <= TIME_WINDOW && cert != c && c.type == CertType.ECC &&
-                c.iccsn == null }
-                .sortAsc { c -> abs(c.validFrom - cert.validFrom) }
-                .find()
+
+        return matchingCert
     }
 
-    static void handleMaybeEccCert(Cert maybeEccCert, Cert rsaCert, List<Cert> resultList, List<Cert> inputList){
-        if(maybeEccCert != null) {
-            resultList.add(maybeEccCert)
-            //TODO: below removals mess up the iterator in line 40
-            inputList.remove(rsaCert)
-            inputList.remove(maybeEccCert)
-        } else {
-            resultList.add(rsaCert) // an dieses RSA cert müssen wir verschlüsseln
+    static RecipientCert findEccCertsWithinTimeProximity(RecipientCert cert, List<RecipientCert> inputCerts){
+        if (cert.iccsn != null) {
+            throw new IllegalStateException()
         }
+        def matchingCert = inputCerts.find { c ->
+            Math.abs(c.validFrom - cert.validFrom) / 1000 <= TIME_WINDOW &&
+                    cert != c && c.type == CertType.ECC &&
+                    c.iccsn == null
+        }
+
+        if (matchingCert != null) {
+            cert.hasPartneringCertOnSameSmcB = true
+            cert.partnerCert = matchingCert
+            matchingCert.hasPartneringCertOnSameSmcB = true
+            matchingCert.partnerCert = cert
+        }
+
+        return matchingCert
     }
 }
