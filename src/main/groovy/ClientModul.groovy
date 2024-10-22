@@ -1,6 +1,4 @@
-
-
-class ClientModul {
+class ClientModul_Variant1 {
 
     static final int TIME_WINDOW = 75
 
@@ -11,18 +9,23 @@ class ClientModul {
      * @param certs the list of certificates to be filtered
      * @return a list of certificates with unnecessary RSA certificates removed
      */
-    static List<Cert> weedOutUnnecessaryRsaCerts(List<Cert> certs ){
-        def certsRsa = certs.findAll{it.type == CertType.RSA}
-        def certsEcc = certs.findAll{it.type == CertType.ECC}
+    static List<Cert> weedOutUnnecessaryRsaCerts(List<Cert> certs) {
+        def certsRsa = certs.findAll { it.type == CertType.RSA }
+        def certsEcc = certs.findAll { it.type == CertType.ECC }
 
         def filteredCerts = certsRsa.findAll { c ->
             certsEcc.any { it.iccsn == c.iccsn && c.iccsn != null } ||
-            certsEcc.findAll { Math.abs(it.validFrom - c.validFrom) / 1000 <= TIME_WINDOW }
-                .findAll { it.telematikId == c.telematikId }
-                .size() == 1
+                    certsEcc.findAll { Math.abs(it.validFrom.getTime() - c.validFrom.getTime()) / 1000 <= TIME_WINDOW }
+                            .findAll { it.telematikId == c.telematikId }
+                            .size() == 1
         }
         return certs - filteredCerts
     }
+}
+
+class ClientModul_Variant2 {
+
+    static final int TIME_WINDOW = 75
 
     //TODO: Consider whether the linkage and flag to a partnering cert is really necessary
     class RecipientCert extends Cert {
@@ -43,7 +46,7 @@ class ClientModul {
      * @param certs the list of certificates to be filtered
      * @return a list of certificates with unnecessary RSA certificates removed
      */
-    List<Cert> weedOutweedOutUnnecessaryRsaCerts(List<Cert> inputCerts ){
+    List<Cert> weedOutUnnecessaryRsaCerts(List<Cert> inputCerts ){
         def certsPerTelematikId = inputCerts.groupBy { c -> c.telematikId }
         def result = []
         for(inputCertsPerTelematikId in certsPerTelematikId.values()) {
@@ -90,7 +93,7 @@ class ClientModul {
             throw new IllegalStateException()
         }
         def matchingCert = inputCerts.find { c ->
-            Math.abs(c.validFrom - cert.validFrom) / 1000 <= TIME_WINDOW &&
+            Math.abs(c.validFrom.getTime() - cert.validFrom.getTime()) / 1000 <= TIME_WINDOW &&
                     cert != c && c.type == CertType.ECC &&
                     c.iccsn == null
         }
