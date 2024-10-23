@@ -56,10 +56,10 @@ class ClientModulCertFilterTest extends Specification {
         def result = clientModul.weedOutUnnecessaryRsaCerts(certs)
 
         then: "No RSA certificates to be filtered out"
-        result == [
-            certs[0],
-            certs[1]
-        ]
+        result.toSet() == [
+                certs[0],
+                certs[1]
+        ].toSet()
 
         where:
         classUnderTest << classesUnderTest
@@ -82,10 +82,10 @@ class ClientModulCertFilterTest extends Specification {
         def result = clientModul.weedOutUnnecessaryRsaCerts(certs)
 
         then: "No RSA certificates shall be filtered out"
-        result == [
-            certs[0],
-            certs[1]
-        ]
+        result.toSet() == [
+                certs[0],
+                certs[1]
+        ].toSet()
 
         where:
         classUnderTest << classesUnderTest
@@ -101,7 +101,7 @@ class ClientModulCertFilterTest extends Specification {
         def clientModul = new GroovyShell().evaluate("new ${classUnderTest}()")
         def certs = [
             new Cert(type: CertType.ECC, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:00:00"), telematikId: "123"),
-            new Cert(type: CertType.RSA, iccsn: null, validFrom: dateFormat.parse("2023-10-01 11:59:55"), telematikId: "123")
+            new Cert(type: CertType.RSA, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:00:05"), telematikId: "123")
         ]
 
         when:
@@ -133,10 +133,10 @@ class ClientModulCertFilterTest extends Specification {
         def result = clientModul.weedOutUnnecessaryRsaCerts(certs)
 
         then: "No RSA certificates to be filtered out"
-        result == [
-            certs[0],
-            certs[1]
-        ]
+        result.toSet() == [
+                certs[0],
+                certs[1]
+        ].toSet()
 
         where:
         classUnderTest << classesUnderTest
@@ -159,15 +159,15 @@ class ClientModulCertFilterTest extends Specification {
         def result = clientModul.weedOutUnnecessaryRsaCerts(certs)
 
         then: "No RSA certificates shall be filtered out"
-        result == [
-            certs[0],
-            certs[1]
-        ]
+        result.toSet() == [
+                certs[0],
+                certs[1]
+        ].toSet()
 
         where:
         classUnderTest << classesUnderTest
     }
-    def "6"() {
+    def "6 - If two certificates have an ICCSN, those shall not be filtered for time proximity."() {
         given: """
         A clientmodul with a list of 2 certificates which:
         - hold different ICCSNs, indicating coming from different SMC-Bs
@@ -185,10 +185,10 @@ class ClientModulCertFilterTest extends Specification {
         def result = clientModul.weedOutUnnecessaryRsaCerts(certs)
 
         then: "The RSA certificate shall not be filtered out"
-        result == [
+        result.toSet() == [
                 certs[0],
                 certs[1]
-        ]
+        ].toSet()
 
         where:
         classUnderTest << classesUnderTest
@@ -211,10 +211,10 @@ class ClientModulCertFilterTest extends Specification {
         def result = clientModul.weedOutUnnecessaryRsaCerts(certs)
 
         then: "The RSA certificate shall not be filtered out"
-        result == [
-            certs[0],
-            certs[1]
-        ]
+        result.toSet() == [
+                certs[0],
+                certs[1]
+        ].toSet()
 
         where:
         classUnderTest << classesUnderTest

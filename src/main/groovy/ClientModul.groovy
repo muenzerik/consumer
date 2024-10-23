@@ -14,12 +14,12 @@ class ClientModul_Variant1 {
         def certsEcc = certs.findAll { it.type == CertType.ECC }
 
         def filteredCerts = certsRsa.findAll { c ->
-            certsEcc.any { it.iccsn == c.iccsn && c.iccsn != null } ||
-                    certsEcc.findAll { Math.abs(it.validFrom.getTime() - c.validFrom.getTime()) / 1000 <= TIME_WINDOW }
-                            .findAll { it.telematikId == c.telematikId }
-                            .size() == 1
+            ! (certsEcc.any { it.iccsn == c.iccsn && c.iccsn != null } &&
+            certsEcc.findAll { Math.abs(it.validFrom.getTime() - c.validFrom.getTime()) / 1000 <= TIME_WINDOW }
+                    .findAll { it.telematikId == c.telematikId }
+                    .size() == 1)
         }
-        return certs - filteredCerts
+        return filteredCerts + certsEcc
     }
 }
 
@@ -63,7 +63,7 @@ class ClientModul_Variant2 {
              if ( cert.iccsn != null ) {
                 redundantRsaCerts?.add(findRsaWithMatchingIccsn(cert, recipientCerts))
             } else {
-                 redundantRsaCerts?.add(findEccCertsWithinTimeProximity(cert, recipientCerts))
+                 redundantRsaCerts?.add(findRsaCertsWithinTimeProximity(cert, recipientCerts))
             }
         }
         return (recipientCerts - redundantRsaCerts).collect({it.originalCert})
@@ -88,13 +88,13 @@ class ClientModul_Variant2 {
         return matchingCert
     }
 
-    static RecipientCert findEccCertsWithinTimeProximity(RecipientCert cert, List<RecipientCert> inputCerts){
+    static RecipientCert findRsaCertsWithinTimeProximity(RecipientCert cert, List<RecipientCert> inputCerts){
         if (cert.iccsn != null) {
             throw new IllegalStateException()
         }
         def matchingCert = inputCerts.find { c ->
             Math.abs(c.validFrom.getTime() - cert.validFrom.getTime()) / 1000 <= TIME_WINDOW &&
-                    cert != c && c.type == CertType.ECC &&
+                    cert != c && c.type == CertType.RSA &&
                     c.iccsn == null
         }
 
