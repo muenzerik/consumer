@@ -213,9 +213,60 @@ class ClientModulCertFilterTest extends Specification {
                 ]
         ]
     }
-}
+    
+    def "7 - If an RSA certificate outside time proximity to an ECC Certificate has no ICCSN, it shall not be filtered for time proximity."() {
+        given: """
+    A clientmodul with a list of 2 certificates which:
+    - hold no ICCSNs
+    - differ in their certificate type of ECC and RSA
+    - have a time difference in certificate production date of 85 seconds (validFrom)
+    - have the same telematikId
+    """
+        def clientModul = new GroovyShell().evaluate("new ${classUnderTest}()")
+        def certs = [
+            new Cert(type: CertType.RSA, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:00:00"), telematikId: "123"),
+            new Cert(type: CertType.ECC, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:01:25"), telematikId: "123")
+        ]
+        when:
+        def result = clientModul.weedOutUnnecessaryRsaCerts(certs)
 
-//TODO: If an RSA certificate outside time proximity to an ECC Certificate has no ICCSN, it shall not be filtered for time proximity.
+        then: "The RSA certificate shall not be filtered out"
+        result.toSet() == [
+                certs[0],
+                certs[1]
+        ].toSet()
+
+        where:
+        classUnderTest << classesUnderTest
+    }
+
+    def "8 - If an RSA certificate outside time proximity to an ECC Certificate has no ICCSN, it shall not be filtered for time proximity."() {
+        given: """
+    A clientmodul with a list of 2 certificates which:
+    - only RSA holds no ICCSN
+    - differ in their certificate type of ECC and RSA
+    - have a time difference in certificate production date of 85 seconds (validFrom)
+    - have the same telematikId
+    """
+        def clientModul = new GroovyShell().evaluate("new ${classUnderTest}()")
+        def certs = [
+            new Cert(type: CertType.RSA, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:00:00"), telematikId: "123"),
+            new Cert(type: CertType.ECC, iccsn: "1234567890", validFrom: dateFormat.parse("2023-10-01 12:01:25"), telematikId: "123")
+        ]
+        when:
+        def result = clientModul.weedOutUnnecessaryRsaCerts(certs)
+
+        then: "The RSA certificate shall not be filtered out"
+        result.toSet() == [
+                certs[0],
+                certs[1]
+        ].toSet()
+
+        where:
+        classUnderTest << classesUnderTest
+    }
+
+}
 
 //TODO: Test cases with more than 2 certificates
 
