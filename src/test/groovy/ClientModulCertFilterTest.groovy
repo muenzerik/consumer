@@ -22,8 +22,8 @@ class ClientModulCertFilterTest extends Specification {
         """
         def clientModul = new GroovyShell().evaluate("new ${classUnderTest}()")
         List<Cert> certs = [
-                new Cert(type: CertType.RSA, iccsn: "1234567890", validFrom: dateFormat.parse("2023-10-01 12:00:00"), telematikId: "123"),
-                new Cert(type: CertType.ECC, iccsn: "1234567890", validFrom: dateFormat.parse("2023-10-01 12:00:05"), telematikId: "123")
+            new Cert(type: CertType.RSA, iccsn: "1234567890", validFrom: dateFormat.parse("2023-10-01 12:00:00"), telematikId: "123"),
+            new Cert(type: CertType.ECC, iccsn: "1234567890", validFrom: dateFormat.parse("2023-10-01 12:00:05"), telematikId: "123")
         ]
 
         when:
@@ -54,8 +54,9 @@ class ClientModulCertFilterTest extends Specification {
         ].toSet()
 
         where:
-        [[description, certsList], classUnderTest] << [[
-       [
+        [[description, certsList], classUnderTest] << [
+        [
+            [
                """
                 A clientmodul with a list of 2 certificates which:
                 - hold no ICCSNs
@@ -64,11 +65,11 @@ class ClientModulCertFilterTest extends Specification {
                 - have the same telematikId
                 """,
                [
-                       new Cert(type: CertType.ECC, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:00:00"), telematikId: "123"),
-                       new Cert(type: CertType.ECC, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:00:05"), telematikId: "123")
+                   new Cert(type: CertType.ECC, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:00:00"), telematikId: "123"),
+                   new Cert(type: CertType.ECC, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:00:05"), telematikId: "123")
                ]
-               ],
-               [
+           ],
+           [
                """
                A clientmodul with a list of 2 certificates which:
                 - hold identical ICCSNs, indicating coming from the same SMC-B
@@ -76,11 +77,11 @@ class ClientModulCertFilterTest extends Specification {
                 - have a time difference in certificate production date of 5 seconds (validFrom)
                 - have the same telematikId
                """,
-                   [
-                       new Cert(type: CertType.ECC, iccsn: "1234567890", validFrom: dateFormat.parse("2023-10-01 12:00:00"), telematikId: "123"),
-                       new Cert(type: CertType.ECC, iccsn: "1234567890", validFrom: dateFormat.parse("2023-10-01 12:00:05"), telematikId: "123")
-                   ]
+               [
+                   new Cert(type: CertType.ECC, iccsn: "1234567890", validFrom: dateFormat.parse("2023-10-01 12:00:00"), telematikId: "123"),
+                   new Cert(type: CertType.ECC, iccsn: "1234567890", validFrom: dateFormat.parse("2023-10-01 12:00:05"), telematikId: "123")
                ]
+           ]
        ], classesUnderTest].combinations()
     }
 
@@ -94,8 +95,8 @@ class ClientModulCertFilterTest extends Specification {
         """
         def clientModul = new GroovyShell().evaluate("new ${classUnderTest}()")
         List<Cert> certs = [
-                new Cert(type: CertType.RSA, iccsn: "1234567890", validFrom: dateFormat.parse("2023-10-01 12:00:00"), telematikId: "123"),
-                new Cert(type: CertType.RSA, iccsn: "1234567890", validFrom: dateFormat.parse("2023-10-01 12:00:05"), telematikId: "123")
+            new Cert(type: CertType.RSA, iccsn: "1234567890", validFrom: dateFormat.parse("2023-10-01 12:00:00"), telematikId: "123"),
+            new Cert(type: CertType.RSA, iccsn: "1234567890", validFrom: dateFormat.parse("2023-10-01 12:00:05"), telematikId: "123")
         ]
 
         when:
@@ -110,6 +111,7 @@ class ClientModulCertFilterTest extends Specification {
         where:
         classUnderTest << classesUnderTest
     }
+
     def "3 - If an RSA certificate within time proximity to an ECC Certificate has no ICCSN, it shall be filtered for time proximity."() {
         given: """
     A clientmodul with a list of 2 certificates which:
@@ -129,7 +131,7 @@ class ClientModulCertFilterTest extends Specification {
 
         then: "The RSA certificate shall be filtered out"
         result == [
-            certs[0]
+                certs[0]
         ]
 
         where:
@@ -189,8 +191,8 @@ class ClientModulCertFilterTest extends Specification {
                 - have the same telematikId
                 """,
                 [
-                        new Cert(type: CertType.ECC, iccsn: "abc", validFrom: dateFormat.parse("2023-10-01 12:00:00"), telematikId: "123"),
-                        new Cert(type: CertType.RSA, iccsn: "def", validFrom: dateFormat.parse("2023-10-01 12:00:05"), telematikId: "123")
+                    new Cert(type: CertType.ECC, iccsn: "abc", validFrom: dateFormat.parse("2023-10-01 12:00:00"), telematikId: "123"),
+                    new Cert(type: CertType.RSA, iccsn: "def", validFrom: dateFormat.parse("2023-10-01 12:00:05"), telematikId: "123")
                 ]
             ],
             [
@@ -202,24 +204,219 @@ class ClientModulCertFilterTest extends Specification {
                 - have the same telematikId
                 """,
                 [
-                        new Cert(type: CertType.ECC, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:00:00"), telematikId: "123"),
-                        new Cert(type: CertType.RSA, iccsn: "def", validFrom: dateFormat.parse("2023-10-01 12:00:05"), telematikId: "123")
+                    new Cert(type: CertType.ECC, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:00:00"), telematikId: "123"),
+                    new Cert(type: CertType.RSA, iccsn: "def", validFrom: dateFormat.parse("2023-10-01 12:00:05"), telematikId: "123")
                 ]
             ]
         ], classesUnderTest].combinations()
     }
-}
+
 
 //TODO: If an RSA certificate outside time proximity to an ECC Certificate has no ICCSN, it shall not be filtered for time proximity.
+    def "7 - If an RSA certificate outside time proximity to an ECC Certificate has no ICCSN, it shall not be filtered for time proximity."() {
+        given: """
+        A clientmodul with a list of 2 certificates which:
+        - hold no ICCSNs
+        - differ in their certificate type of ECC and RSA
+        - have a time difference in certificate production date of 85 seconds (validFrom)
+        - have the same telematikId
+        """
+        def clientModul = new GroovyShell().evaluate("new ${classUnderTest}()")
+        List<Cert> certs = [
+            new Cert(type: CertType.RSA, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:00:00"), telematikId: "123"),
+            new Cert(type: CertType.ECC, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:01:25"), telematikId: "123")
+        ]
+        when:
+        List<Cert> result = clientModul.weedOutUnnecessaryRsaCerts(certs)
+
+        then: "The RSA certificate shall not be filtered out"
+        result.toSet() == [
+                certs[0],
+                certs[1]
+        ].toSet()
+
+        where:
+        classUnderTest << classesUnderTest
+    }
+
+    def "8 - If an RSA certificate outside time proximity to an ECC Certificate has no ICCSN, it shall not be filtered for time proximity."() {
+        given: """
+        A clientmodul with a list of 2 certificates which:
+        - only RSA holds no ICCSN
+        - differ in their certificate type of ECC and RSA
+        - have a time difference in certificate production date of 85 seconds (validFrom)
+        - have the same telematikId
+        """
+        def clientModul = new GroovyShell().evaluate("new ${classUnderTest}()")
+        List<Cert> certs = [
+            new Cert(type: CertType.RSA, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:00:00"), telematikId: "123"),
+            new Cert(type: CertType.ECC, iccsn: "1234567890", validFrom: dateFormat.parse("2023-10-01 12:01:25"), telematikId: "123")
+        ]
+        when:
+        List<Cert> result = clientModul.weedOutUnnecessaryRsaCerts(certs)
+
+        then: "The RSA certificate shall not be filtered out"
+        result.toSet() == [
+                certs[0],
+                certs[1]
+        ].toSet()
+
+        where:
+        classUnderTest << classesUnderTest
+    }
 
 //TODO: Test cases with more than 2 certificates
-
 //TODO: Test cases with more than 2 certificates and different telematikIds
+    def "9 - If an RSA certificate within time proximity to an ECC Certificate has a different telematikID, it shall not be filtered."() {
+        given: """
+        A clientmodul with a list of 4 certificates which:
+        - certificates hold no ICCSNs
+        - differ in their certificate type of ECC and RSA
+        - have a time difference in certificate production date of 85 and 60 seconds (validFrom)
+        - have different telematikIds
+        """
+        def clientModul = new GroovyShell().evaluate("new ${classUnderTest}()")
+        List<Cert> certs = [
+            new Cert(type: CertType.RSA, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:00:00"), telematikId: "123"),
+            new Cert(type: CertType.ECC, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:01:25"), telematikId: "123"),
+            new Cert(type: CertType.RSA, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:00:05"), telematikId: "1234"),
+            new Cert(type: CertType.ECC, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:01:05"), telematikId: "1234")
+        ]
+        when:
+        List<Cert> result = clientModul.weedOutUnnecessaryRsaCerts(certs)
+
+        then: "The RSA certificate shall not be filtered out"
+        result.toSet() == [
+                certs[0],
+                certs[1],
+                certs[3]
+        ].toSet()
+
+        where:
+        classUnderTest << classesUnderTest
+    }
 
 //TODO: Test cases with more than 2 certificates and different certificate types
+    def "11 - If an RSA certificate inside time proximity to an ECC Certificate has the same telematikID, it shall be filtered."() {
+        given: """
+        A clientmodul with a list of 4 certificates which:
+        - certificates hold no ICCSNs
+        - some have same certificate type
+        - have a time difference in certificate production date of 85 and 60 seconds (validFrom)
+        - have the same telematikId
+        """
+        def clientModul = new GroovyShell().evaluate("new ${classUnderTest}()")
+        List<Cert> certs = [
+            new Cert(type: CertType.RSA, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:00:00"), telematikId: "123"),
+            new Cert(type: CertType.ECC, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:01:25"), telematikId: "123"),
+            new Cert(type: CertType.ECC, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:00:05"), telematikId: "123"),
+            new Cert(type: CertType.ECC, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:01:05"), telematikId: "123")
+        ]
+        when:
+        List<Cert> result = clientModul.weedOutUnnecessaryRsaCerts(certs)
+
+        then: "The RSA certificate shall not be filtered out"
+        result.toSet() == [
+                certs[1],
+                certs[2],
+                certs[3]
+        ].toSet()
+
+        where:
+        classUnderTest << classesUnderTest
+    }
+
+    def "12 - If an RSA certificate outide time proximity to an ECC Certificate has the same telematikID and iccsn, it shall be filtered."() {
+        given: """
+        A clientmodul with a list of 4 certificates which:
+        - some hold same ICCSNs
+        - some have same certificate type
+        - have a time difference in certificate production date of 85 and 60 seconds (validFrom)
+        - have the same telematikId
+        """
+        def clientModul = new GroovyShell().evaluate("new ${classUnderTest}()")
+        List<Cert> certs = [
+            new Cert(type: CertType.RSA, iccsn: "1234567890", validFrom: dateFormat.parse("2023-10-01 12:00:00"), telematikId: "123"),
+            new Cert(type: CertType.ECC, iccsn: "1234567890", validFrom: dateFormat.parse("2023-10-01 12:01:25"), telematikId: "123"),
+            new Cert(type: CertType.ECC, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:00:05"), telematikId: "123"),
+            new Cert(type: CertType.ECC, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:01:05"), telematikId: "123")
+        ]
+        when:
+        List<Cert> result = clientModul.weedOutUnnecessaryRsaCerts(certs)
+
+        then: "The RSA certificate shall not be filtered out"
+        result.toSet() == [
+                certs[1],
+                certs[2],
+                certs[3]
+        ].toSet()
+
+        where:
+        classUnderTest << classesUnderTest
+    }
+
+    def "13 - If an RSA certificate inside time proximity to an ECC Certificate has the same telematikID and iccsn, it shall be filtered."() {
+        given: """
+        A clientmodul with a list of 4 certificates which:
+        - hold the same ICCSN
+        - some have same certificate type
+        - have a time difference in certificate production date of 85 and 60 seconds (validFrom)
+        - have different telematikIds
+        """
+        def clientModul = new GroovyShell().evaluate("new ${classUnderTest}()")
+        List<Cert> certs = [
+            new Cert(type: CertType.RSA, iccsn: "1234567890", validFrom: dateFormat.parse("2023-10-01 12:00:00"), telematikId: "123"),
+            new Cert(type: CertType.ECC, iccsn: "1234567890", validFrom: dateFormat.parse("2023-10-01 12:01:25"), telematikId: "123"),
+            new Cert(type: CertType.ECC, iccsn: "1234567890", validFrom: dateFormat.parse("2023-10-01 12:00:05"), telematikId: "123"),
+            new Cert(type: CertType.ECC, iccsn: "1234567890", validFrom: dateFormat.parse("2023-10-01 12:01:05"), telematikId: "123")
+        ]
+        when:
+        List<Cert> result = clientModul.weedOutUnnecessaryRsaCerts(certs)
+
+        then: "The RSA certificate shall not be filtered out"
+        result.toSet() == [
+                certs[1],
+                certs[2],
+                certs[3]
+        ].toSet()
+
+        where:
+        classUnderTest << classesUnderTest
+    }
 
 //TODO: Test cases with more than 2 certificates and different certificate types and different telematikIds
+    def "10 - If an RSA certificate inside time proximity to an ECC Certificate has a different telematikID, it shall not be filtered."() {
+        given: """
+        A clientmodul with a list of 4 certificates which:
+        - certificates hold no ICCSNs
+        - some have same certificate type
+        - have a time difference in certificate production date of 85 and 60 seconds (validFrom)
+        - have different telematikIds
+        """
+        def clientModul = new GroovyShell().evaluate("new ${classUnderTest}()")
+        List<Cert> certs = [
+            new Cert(type: CertType.RSA, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:00:00"), telematikId: "123"),
+            new Cert(type: CertType.ECC, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:01:25"), telematikId: "123"),
+            new Cert(type: CertType.ECC, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:00:05"), telematikId: "1234"),
+            new Cert(type: CertType.ECC, iccsn: null, validFrom: dateFormat.parse("2023-10-01 12:01:05"), telematikId: "1234")
+        ]
+        when:
+        List<Cert> result = clientModul.weedOutUnnecessaryRsaCerts(certs)
+
+        then: "The RSA certificate shall not be filtered out"
+        result.toSet() == [
+                certs[0],
+                certs[1],
+                certs[2],
+                certs[3]
+        ].toSet()
+
+        where:
+        classUnderTest << classesUnderTest
+    }
 
 //TODO: Test cases with more than 2 certificates and different certificate types and different telematikIds and different ICCSNs
 
 //TODO: Test cases with more than 2 certificates and different certificate types and different telematikIds and different ICCSNs and different time proximity
+
+}
