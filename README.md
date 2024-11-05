@@ -44,10 +44,10 @@ The `ClientModul` project is designed to filter out unnecessary RSA certificates
 
 ## Usage
 
-To use the `ClientModul` class, instantiate it and call the `weedOutUnnecessaryRsaCerts` method with a list of certificates:
+To use the `ClientModul` class in the desired variant, instantiate it and call the `weedOutUnnecessaryRsaCerts` method with a list of certificates:
 
 ```groovy
-def clientModul = new ClientModul()
+def clientModul = new ClientModul_<VariantNumber>()
 def filteredCerts = clientModul.weedOutUnnecessaryRsaCerts(certs)
 ```
 
